@@ -595,6 +595,56 @@ export function Patterns() {
               </div>
             </div>
           </div>
+          
+          {simulationResults.length > 0 && (
+            <div>
+              <h4 className="font-medium mb-2">Simulation Results</h4>
+              <div className="space-y-2">
+                {simulationResults.map((result) => (
+                  <div key={result.orderId} className="p-4 bg-secondary/5 rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h5 className="font-medium">Order {result.orderId}</h5>
+                        <p className="text-sm text-text-secondary">Fraud Score: {result.fraudScore}%</p>
+                      </div>
+                      <Badge
+                        variant={
+                          result.fraudScore > 80
+                            ? 'danger'
+                            : result.fraudScore > 60
+                            ? 'warning'
+                            : 'success'
+                        }
+                      >
+                        {result.fraudScore}%
+                      </Badge>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Matched Patterns:</p>
+                      <div className="flex gap-1 flex-wrap mt-1">
+                        {result.matchedPatterns.map((pattern) => (
+                          <Badge key={pattern} variant="secondary">
+                            {pattern}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Recommended SOPs:</p>
+                      <div className="flex gap-1 flex-wrap mt-1">
+                        {result.recommendedSOPs.map((sop) => (
+                          <Badge key={sop} variant="primary">
+                            {sop}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <h4 className="font-medium mb-2">Expected Results</h4>
             <div className="bg-secondary/10 p-4 rounded">
