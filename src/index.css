@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #00f2ff;
+    --primary-dark: #00d4e0;
+    --background: #1a1f2e;
+    --card: #2d3748;
+    --text: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --border: #374151;
+  }
+
+  body {
+    @apply bg-background text-text font-sans antialiased min-h-screen;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-text;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-card rounded-lg p-6 shadow-lg border border-border;
+  }
+  
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-background hover:bg-primary-dark;
+  }
+  
+  .btn-secondary {
+    @apply bg-card text-text hover:bg-opacity-90 border border-border;
+  }
+  
+  .input {
+    @apply bg-background border border-border rounded-md px-4 py-2 text-text placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-border;
+  }
+
+  .table {
+    @apply w-full;
+  }
+
+  .table th {
+    @apply px-6 py-4 text-left text-sm font-semibold text-text-secondary border-b border-border;
+  }
+
+  .table td {
+    @apply px-6 py-4 text-sm text-text border-b border-border;
+  }
+
+  .table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .table tr:hover {
+    @apply bg-opacity-50 bg-card;
+  }
+
+  .badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100;
+  }
+
+  .badge-danger {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100;
+  }
+
+  .badge-secondary {
+    @apply bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100;
+  }
+}
