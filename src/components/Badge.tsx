@@ -1,26 +1,26 @@
-import { ReactNode } from 'react'
-import clsx from 'clsx'
+import { cn } from "../lib/utils";
 
-interface BadgeProps {
-  children: ReactNode
-  variant?: 'success' | 'warning' | 'danger' | 'secondary' | 'primary'
-  className?: string
+interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "default" | "success" | "warning" | "error" | "info";
 }
 
-export function Badge({ children, variant = 'secondary', className = '' }: BadgeProps) {
-  const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium'
-  
-  const variantClasses = {
-    success: 'bg-success/10 text-success',
-    warning: 'bg-warning/10 text-warning',
-    danger: 'bg-danger/10 text-danger',
-    secondary: 'bg-secondary/10 text-secondary',
-    primary: 'bg-primary/10 text-primary'
-  }
+export function Badge({ className, variant = "default", ...props }: BadgeProps) {
+  const variantStyles = {
+    default: "bg-gray-100 text-gray-800",
+    success: "bg-green-100 text-green-800",
+    warning: "bg-yellow-100 text-yellow-800",
+    error: "bg-red-100 text-red-800",
+    info: "bg-blue-100 text-blue-800",
+  };
 
   return (
-    <span className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
-      {children}
-    </span>
-  )
+    <div
+      className={cn(
+        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+        variantStyles[variant],
+        className
+      )}
+      {...props}
+    />
+  );
 } 

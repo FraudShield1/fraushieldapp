@@ -5,10 +5,13 @@ import { Badge } from '../components/Badge'
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -45,11 +48,20 @@ const mockPatternEffectiveness = [
   { name: 'Transaction History', value: 82 }
 ]
 
+const mockFraudRateData = [
+  { date: '2024-03-10', fraudRate: 0.12 },
+  { date: '2024-03-11', fraudRate: 0.15 },
+  { date: '2024-03-12', fraudRate: 0.08 },
+  { date: '2024-03-13', fraudRate: 0.20 },
+  { date: '2024-03-14', fraudRate: 0.18 },
+  { date: '2024-03-15', fraudRate: 0.25 }
+]
+
 const COLORS = ['#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#D4A5A5']
 
 export function Analytics() {
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d')
-  const [selectedMetric, setSelectedMetric] = useState<'cases' | 'prevented'>('cases')
+  const [selectedMetric, setSelectedMetric] = useState("fraudRate")
+  const [timeRange, setTimeRange] = useState("7d")
 
   return (
     <div className="space-y-6">
@@ -86,48 +98,22 @@ export function Analytics() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Fraud Trends</h2>
-            <div className="flex space-x-2">
-              <Button
-                variant={timeRange === '7d' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setTimeRange('7d')}
-              >
-                7D
-              </Button>
-              <Button
-                variant={timeRange === '30d' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setTimeRange('30d')}
-              >
-                30D
-              </Button>
-              <Button
-                variant={timeRange === '90d' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setTimeRange('90d')}
-              >
-                90D
-              </Button>
-            </div>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockFraudTrends}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey={selectedMetric}
-                  stroke="#4ECDC4"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <h3 className="text-lg font-semibold mb-4">Fraud Rate Trend</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={mockFraudRateData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="fraudRate"
+                stroke="#8884d8"
+                name="Fraud Rate"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </Card>
 
         <Card>

@@ -6,27 +6,25 @@ import { Badge } from './Badge'
 interface IntegrationCardProps {
   name: string
   description: string
-  icon: string
-  type: 'payment' | 'ecom' | 'risk' | 'docs' | 'analytics'
-  status: 'active' | 'warning' | 'error'
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  status: 'connected' | 'disconnected' | 'error'
   lastSync?: string
   onConnect: () => void
   onDisconnect: () => void
   onTest: () => void
-  onToggleWebhook: (enabled: boolean) => void
+  onWebhookToggle: (enabled: boolean) => void
 }
 
 export function IntegrationCard({
   name,
   description,
   icon,
-  type,
   status,
   lastSync,
   onConnect,
   onDisconnect,
   onTest,
-  onToggleWebhook
+  onWebhookToggle
 }: IntegrationCardProps) {
   const [isConnected, setIsConnected] = useState(false)
   const [apiKey, setApiKey] = useState('')
@@ -48,7 +46,7 @@ export function IntegrationCard({
 
   const handleWebhookToggle = (enabled: boolean) => {
     setWebhookEnabled(enabled)
-    onToggleWebhook(enabled)
+    onWebhookToggle(enabled)
   }
 
   return (
@@ -63,9 +61,9 @@ export function IntegrationCard({
         </div>
         <Badge
           variant={
-            status === 'active'
+            status === 'connected'
               ? 'success'
-              : status === 'warning'
+              : status === 'disconnected'
               ? 'warning'
               : 'danger'
           }

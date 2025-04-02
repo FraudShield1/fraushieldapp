@@ -23,13 +23,7 @@ interface Pattern {
   definition: string
   modifiedBy: string
   effectiveness: number
-}
-
-interface SimulationResult {
-  orderId: string
-  fraudScore: number
-  matchedPatterns: string[]
-  recommendedSOPs: string[]
+  riskLevel: 'high' | 'medium' | 'low'
 }
 
 const mockPatterns: Pattern[] = [
@@ -48,7 +42,8 @@ const mockPatterns: Pattern[] = [
     status: 'active',
     definition: 'IF IP = Proxy + shipping ≠ billing + delivery < 3d THEN HIGH',
     modifiedBy: 'John Doe',
-    effectiveness: 85
+    effectiveness: 85,
+    riskLevel: 'high'
   },
   {
     id: 'PAT-002',
@@ -65,7 +60,8 @@ const mockPatterns: Pattern[] = [
     status: 'active',
     definition: 'IF refunds > 3 in 30d + different cards used THEN HIGH',
     modifiedBy: 'Jane Smith',
-    effectiveness: 90
+    effectiveness: 90,
+    riskLevel: 'high'
   }
 ]
 
@@ -386,45 +382,6 @@ export function Patterns() {
               <Button>Run Simulation</Button>
             </div>
           </Card>
-
-          {/* simulationResults.length > 0 && (
-            <Card>
-              <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
-              <Table
-                columns={[
-                  { key: 'orderId', header: 'Order ID' },
-                  { 
-                    key: 'fraudScore', 
-                    header: 'Fraud Score',
-                    render: (result: SimulationResult) => (
-                      <Badge
-                        variant={
-                          result.fraudScore > 80
-                            ? 'danger'
-                            : result.fraudScore > 60
-                            ? 'warning'
-                            : 'success'
-                        }
-                      >
-                        {result.fraudScore}
-                      </Badge>
-                    )
-                  },
-                  { 
-                    key: 'matchedPatterns', 
-                    header: 'Matched Patterns',
-                    render: (result: SimulationResult) => result.matchedPatterns.join(', ')
-                  },
-                  {
-                    key: 'recommendedSOPs',
-                    header: 'Recommended SOPs',
-                    render: (result: SimulationResult) => result.recommendedSOPs.join(', ')
-                  }
-                ]}
-                data={simulationResults}
-              />
-            </Card>
-          ) */}
         </div>
       )}
 
