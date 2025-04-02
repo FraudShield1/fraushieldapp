@@ -86,7 +86,6 @@ const COLORS = ['#00f2ff', '#0088FE', '#00C49F']
 export function Patterns() {
   const [activeTab, setActiveTab] = useState<'library' | 'builder' | 'simulation' | 'versions'>('library')
   const [selectedPattern, setSelectedPattern] = useState<Pattern | null>(null)
-  const [simulationResults, setSimulationResults] = useState<SimulationResult[]>([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isSimulationModalOpen, setIsSimulationModalOpen] = useState(false)
   const [editedPattern, setEditedPattern] = useState<Pattern | null>(null)
@@ -114,7 +113,15 @@ export function Patterns() {
 
   const handleRunSimulation = () => {
     if (selectedPattern) {
-      // In a real app, this would run a simulation
+      // In a real app, this would run a simulation and update the results
+      const mockResults: SimulationResult[] = [
+        {
+          orderId: 'ORD-001',
+          fraudScore: 85,
+          matchedPatterns: [selectedPattern.name],
+          recommendedSOPs: ['Review Order', 'Contact Customer']
+        }
+      ]
       showToast('Simulation completed successfully', 'success')
       setIsSimulationModalOpen(false)
     }
@@ -387,41 +394,24 @@ export function Patterns() {
             </div>
           </Card>
 
-          {simulationResults.length > 0 && (
+          {selectedPattern && (
             <Card>
               <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
               <Table
                 columns={[
                   { key: 'orderId', header: 'Order ID' },
-                  { 
-                    key: 'fraudScore', 
-                    header: 'Fraud Score',
-                    render: (result: SimulationResult) => (
-                      <Badge
-                        variant={
-                          result.fraudScore > 80
-                            ? 'danger'
-                            : result.fraudScore > 60
-                            ? 'warning'
-                            : 'success'
-                        }
-                      >
-                        {result.fraudScore}
-                      </Badge>
-                    )
-                  },
-                  { 
-                    key: 'matchedPatterns', 
-                    header: 'Matched Patterns',
-                    render: (result: SimulationResult) => result.matchedPatterns.join(', ')
-                  },
+                  { key: 'fraudScore', header: 'Fraud Score' },
+                  { key: 'matchedPatterns', header: 'Matched Patterns' },
+                  { key: 'recommendedSOPs', header: 'Recommended SOPs' }
+                ]}
+                data={[
                   {
-                    key: 'recommendedSOPs',
-                    header: 'Recommended SOPs',
-                    render: (result: SimulationResult) => result.recommendedSOPs.join(', ')
+                    orderId: 'ORD-001',
+                    fraudScore: 85,
+                    matchedPatterns: [selectedPattern.name],
+                    recommendedSOPs: ['Review Order', 'Contact Customer']
                   }
                 ]}
-                data={simulationResults}
               />
             </Card>
           )}

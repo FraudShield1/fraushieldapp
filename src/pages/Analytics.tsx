@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
-import { Badge } from '../components/Badge'
 import {
   LineChart,
   Line,
@@ -112,6 +111,22 @@ export function Analytics() {
               </Button>
             </div>
           </div>
+          <div className="flex space-x-2 mb-4">
+            <Button
+              variant={selectedMetric === 'cases' ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setSelectedMetric('cases')}
+            >
+              Cases
+            </Button>
+            <Button
+              variant={selectedMetric === 'prevented' ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setSelectedMetric('prevented')}
+            >
+              Prevented
+            </Button>
+          </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={mockFraudTrends}>
@@ -144,7 +159,7 @@ export function Analytics() {
                   outerRadius={80}
                   label
                 >
-                  {mockFraudTypes.map((entry, index) => (
+                  {mockFraudTypes.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
@@ -171,7 +186,7 @@ export function Analytics() {
                   outerRadius={80}
                   label
                 >
-                  {mockRiskDistribution.map((entry, index) => (
+                  {mockRiskDistribution.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
@@ -198,7 +213,7 @@ export function Analytics() {
                   outerRadius={80}
                   label
                 >
-                  {mockPatternEffectiveness.map((entry, index) => (
+                  {mockPatternEffectiveness.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}

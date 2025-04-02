@@ -84,36 +84,36 @@ export function Cases() {
 
   const tableColumns = [
     {
-      accessor: 'title',
-      label: 'Title'
+      key: 'title',
+      header: 'Title'
     },
     {
-      accessor: 'type',
-      label: 'Type'
+      key: 'type',
+      header: 'Type'
     },
     {
-      accessor: 'status',
-      label: 'Status'
+      key: 'status',
+      header: 'Status'
     },
     {
-      accessor: 'priority',
-      label: 'Priority'
+      key: 'priority',
+      header: 'Priority'
     },
     {
-      accessor: 'assignedTo',
-      label: 'Assigned To'
+      key: 'assignedTo',
+      header: 'Assigned To'
     },
     {
-      accessor: 'createdAt',
-      label: 'Created At'
+      key: 'createdAt',
+      header: 'Created At'
     },
     {
-      accessor: 'updatedAt',
-      label: 'Updated At'
+      key: 'updatedAt',
+      header: 'Updated At'
     },
     {
-      accessor: 'riskScore',
-      label: 'Risk Score'
+      key: 'riskScore',
+      header: 'Risk Score'
     }
   ]
 

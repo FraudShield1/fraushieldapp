@@ -7,7 +7,6 @@ interface IntegrationCardProps {
   name: string
   description: string
   icon: string
-  type: 'payment' | 'ecom' | 'risk' | 'docs' | 'analytics'
   status: 'active' | 'warning' | 'error'
   lastSync?: string
   onConnect: () => void
@@ -20,7 +19,6 @@ export function IntegrationCard({
   name,
   description,
   icon,
-  type,
   status,
   lastSync,
   onConnect,

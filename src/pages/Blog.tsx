@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Card } from '../components/Card'
-import { Button } from '../components/Button'
 
 interface BlogPost {
   id: string
@@ -52,17 +51,17 @@ export function Blog() {
       <Card>
         <h2 className="text-lg font-semibold mb-4">Latest Posts</h2>
         <div className="space-y-4">
-          <div className="border-b pb-4">
-            <h3 className="text-lg font-medium">Understanding TCP Fingerprinting</h3>
-            <p className="text-sm text-gray-500 mt-1">Learn how TCP fingerprinting works and its role in fraud detection.</p>
-            <span className="text-xs text-gray-400">March 15, 2024</span>
-          </div>
-          
-          <div className="border-b pb-4">
-            <h3 className="text-lg font-medium">Best Practices for Fraud Prevention</h3>
-            <p className="text-sm text-gray-500 mt-1">Essential strategies to protect your business from fraudulent activities.</p>
-            <span className="text-xs text-gray-400">March 10, 2024</span>
-          </div>
+          {posts.map(post => (
+            <div key={post.id} className="border-b pb-4">
+              <h3 className="text-lg font-medium">{post.title}</h3>
+              <p className="text-sm text-gray-500 mt-1">{post.excerpt}</p>
+              <div className="flex items-center gap-4 mt-2">
+                <span className="text-xs text-gray-400">{post.date}</span>
+                <span className="text-xs text-gray-400">{post.readTime}</span>
+                <span className="text-xs text-gray-400">By {post.author}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </Card>
     </div>

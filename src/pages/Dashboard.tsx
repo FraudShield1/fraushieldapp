@@ -103,7 +103,6 @@ export function Dashboard() {
   const [stats] = useState(mockStats)
   const [dailyData] = useState(mockDailyFlaggedOrders)
   const [fraudReasons] = useState(mockFraudReasons)
-  const [riskDistribution] = useState(mockRiskDistribution)
 
   return (
     <div className="space-y-6">
