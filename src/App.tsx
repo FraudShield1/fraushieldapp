@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ToastProvider } from './contexts/ToastContext'
 import { Dashboard } from './pages/Dashboard'
@@ -13,29 +14,37 @@ import { Analytics } from './pages/Analytics'
 import { Users } from './pages/Users'
 import { Settings } from './pages/Settings'
 import { TCPFingerprint } from './pages/TCPFingerprint'
+import { Blog } from './pages/Blog'
+import { KYC } from './pages/KYC'
+
+const queryClient = new QueryClient()
 
 function App() {
   return (
-    <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
       <ToastProvider>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/patterns" element={<Patterns />} />
-            <Route path="/sops" element={<SOPs />} />
-            <Route path="/cases" element={<Cases />} />
-            <Route path="/chargebacks" element={<Chargebacks />} />
-            <Route path="/warranty" element={<Warranty />} />
-            <Route path="/tracking-anomalies" element={<TrackingAnomalies />} />
-            <Route path="/tcp-fingerprint" element={<TCPFingerprint />} />
-            <Route path="/insiders" element={<Insiders />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-        </Layout>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/patterns" element={<Patterns />} />
+              <Route path="/sops" element={<SOPs />} />
+              <Route path="/cases" element={<Cases />} />
+              <Route path="/chargebacks" element={<Chargebacks />} />
+              <Route path="/warranty" element={<Warranty />} />
+              <Route path="/tracking-anomalies" element={<TrackingAnomalies />} />
+              <Route path="/tcp-fingerprint" element={<TCPFingerprint />} />
+              <Route path="/insiders" element={<Insiders />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/kyc" element={<KYC />} />
+            </Routes>
+          </Layout>
+        </Router>
       </ToastProvider>
-    </BrowserRouter>
+    </QueryClientProvider>
   )
 }
 
