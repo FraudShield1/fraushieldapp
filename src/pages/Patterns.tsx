@@ -556,7 +556,18 @@ export function Patterns() {
       <Modal
         isOpen={isSimulationModalOpen}
         onClose={() => setIsSimulationModalOpen(false)}
-        title="Pattern Simulation Results"
+        title="Pattern Simulation"
+        actions={[
+          {
+            label: 'Close',
+            onClick: () => setIsSimulationModalOpen(false)
+          },
+          {
+            label: 'Run Simulation',
+            onClick: handleRunSimulation,
+            variant: 'primary'
+          }
+        ]}
       >
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -582,12 +593,9 @@ export function Patterns() {
                   <PieChart>
                     <Pie
                       data={mockCategories}
+                      outerRadius={80}
+                      fill="#8884d8"
                       dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label
                     >
                       {mockCategories.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
