@@ -5,7 +5,7 @@ import { Badge } from '../components/Badge'
 import { Table } from '../components/Table'
 import { Order } from '../types'
 import { mockOrders, mockStats, mockDailyFlaggedOrders, mockFraudReasons, mockRiskDistribution } from '../utils/mockData'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 // Integration data
 const integrationData = {
@@ -103,6 +103,7 @@ export function Dashboard() {
   const [stats] = useState(mockStats)
   const [dailyData] = useState(mockDailyFlaggedOrders)
   const [fraudReasons] = useState(mockFraudReasons)
+  const [riskDistribution] = useState(mockRiskDistribution)
 
   return (
     <div className="space-y-6">
@@ -218,6 +219,22 @@ export function Dashboard() {
           </div>
         </Card>
       </div>
+
+      {/* Risk Distribution Chart */}
+      <Card>
+        <h2 className="text-lg font-semibold mb-4">Risk Distribution</h2>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={riskDistribution}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="#3b82f6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
 
       {/* Recent Compensations Table */}
       <Card>
