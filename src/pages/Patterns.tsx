@@ -84,9 +84,9 @@ const mockCategories = [
 const COLORS = ['#00f2ff', '#0088FE', '#00C49F']
 
 export function Patterns() {
-  const [activeTab, setActiveTab] = useState<'library' | 'builder' | 'simulation' | 'versions'>('library')
+  const [patterns] = useState(mockPatterns)
+  const [activeTab, setActiveTab] = useState('all')
   const [selectedPattern, setSelectedPattern] = useState<Pattern | null>(null)
-  const [simulationResults, setSimulationResults] = useState<SimulationResult[]>([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isSimulationModalOpen, setIsSimulationModalOpen] = useState(false)
   const [editedPattern, setEditedPattern] = useState<Pattern | null>(null)
@@ -237,7 +237,7 @@ export function Patterns() {
                 </select>
               </div>
             </div>
-            <Table columns={tableColumns} data={mockPatterns} />
+            <Table columns={tableColumns} data={patterns} />
           </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -375,7 +375,7 @@ export function Patterns() {
                 <div className="flex-1">
                   <label className="block text-sm font-medium mb-1">Select Patterns</label>
                   <select className="input w-full" multiple>
-                    {mockPatterns.map(pattern => (
+                    {patterns.map(pattern => (
                       <option key={pattern.id} value={pattern.id}>
                         {pattern.name}
                       </option>
@@ -387,7 +387,7 @@ export function Patterns() {
             </div>
           </Card>
 
-          {simulationResults.length > 0 && (
+          {/* simulationResults.length > 0 && (
             <Card>
               <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
               <Table
@@ -424,7 +424,7 @@ export function Patterns() {
                 data={simulationResults}
               />
             </Card>
-          )}
+          ) */}
         </div>
       )}
 

@@ -53,31 +53,8 @@ const mockUsers: User[] = [
   }
 ]
 
-const mockActivityLog = [
-  {
-    id: 'LOG-001',
-    user: 'John Smith',
-    action: 'Created new pattern',
-    timestamp: '2024-03-15T14:30:00Z',
-    details: 'Multiple Returns Pattern v2.0'
-  },
-  {
-    id: 'LOG-002',
-    user: 'Sarah Johnson',
-    action: 'Updated user permissions',
-    timestamp: '2024-03-15T13:45:00Z',
-    details: 'Added analytics access for Mike Wilson'
-  },
-  {
-    id: 'LOG-003',
-    user: 'Mike Wilson',
-    action: 'Viewed analytics dashboard',
-    timestamp: '2024-03-14T09:15:00Z',
-    details: 'Accessed fraud trends report'
-  }
-]
-
 export function Users() {
+  const [users] = useState(mockUsers)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)

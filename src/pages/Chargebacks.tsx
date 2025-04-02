@@ -146,7 +146,7 @@ export function Chargebacks() {
                   outerRadius={80}
                   label
                 >
-                  {mockPaymentMethodData.map((entry, index) => (
+                  {mockPaymentMethodData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={`var(--primary-${index + 1})`} />
                   ))}
                 </Pie>

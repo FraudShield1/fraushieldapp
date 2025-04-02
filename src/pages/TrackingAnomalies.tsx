@@ -4,7 +4,7 @@ import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
 import { Table } from '../components/Table'
 import { Modal } from '../components/Modal'
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter } from 'recharts'
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface TrackingOrder {
   id: string
@@ -91,17 +91,6 @@ export function TrackingAnomalies() {
   const [orders] = useState<TrackingOrder[]>(mockOrders)
   const [selectedOrder, setSelectedOrder] = useState<TrackingOrder | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
-  const [filters, setFilters] = useState({
-    courier: '',
-    country: '',
-    fraudScore: [0, 100],
-    refundType: '',
-    proxyUsed: false,
-    addressMismatch: false,
-    highRiskZip: false,
-    regionHop: false,
-    multipleClaims: false
-  })
 
   const tableColumns = [
     { key: 'id', header: 'Order ID' },

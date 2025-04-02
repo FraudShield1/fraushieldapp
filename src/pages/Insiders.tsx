@@ -67,7 +67,7 @@ const tableColumns = [
             ? 'danger'
             : log.risk.includes('failed')
             ? 'warning'
-            : 'info'
+            : 'primary'
         }
       >
         {log.risk}

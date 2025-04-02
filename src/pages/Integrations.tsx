@@ -45,8 +45,8 @@ const mockIntegrations: Integration[] = [
 ]
 
 export function Integrations() {
-  const [activeTab, setActiveTab] = useState<'all' | 'payment' | 'shipping' | 'analytics' | 'identity'>('all')
-  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
+  const [integrations] = useState(mockIntegrations)
+  const [activeTab, setActiveTab] = useState('all')
 
   const filteredIntegrations = activeTab === 'all'
     ? mockIntegrations
@@ -122,7 +122,6 @@ export function Integrations() {
             <div
               key={integration.id}
               className="flex items-center justify-between p-4 bg-secondary/5 rounded-lg hover:bg-secondary/10 cursor-pointer"
-              onClick={() => setSelectedIntegration(integration)}
             >
               <div>
                 <h3 className="font-medium">{integration.name}</h3>

@@ -2,18 +2,8 @@ import { useState } from 'react'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts'
+import { Table } from '../components/Table'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface Case {
   id: string
@@ -73,6 +63,9 @@ const mockCaseTypes = [
 const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1']
 
 export function Cases() {
+  const [cases] = useState(mockCases)
+  const [selectedCaseType, setSelectedCaseType] = useState('all')
+  const [selectedStatus, setSelectedStatus] = useState('all')
   const [activeTab, setActiveTab] = useState<'all' | 'open' | 'in_progress' | 'resolved'>('all')
   const [selectedCase, setSelectedCase] = useState<Case | null>(null)
 
