@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
+import { Table } from '../components/Table'
 import {
   LineChart,
   Line,
@@ -23,7 +24,7 @@ interface Case {
   priority: 'low' | 'medium' | 'high'
   assignedTo: string
   createdAt: string
-  lastUpdated: string
+  updatedAt: string
   riskScore: number
   tags: string[]
 }
@@ -37,7 +38,7 @@ const mockCases: Case[] = [
     priority: 'high',
     assignedTo: 'John Smith',
     createdAt: '2024-03-15T10:00:00Z',
-    lastUpdated: '2024-03-15T14:30:00Z',
+    updatedAt: '2024-03-15T14:30:00Z',
     riskScore: 85,
     tags: ['refund', 'high-risk', 'urgent']
   },
@@ -49,7 +50,7 @@ const mockCases: Case[] = [
     priority: 'medium',
     assignedTo: 'Sarah Johnson',
     createdAt: '2024-03-14T15:20:00Z',
-    lastUpdated: '2024-03-15T09:15:00Z',
+    updatedAt: '2024-03-15T09:15:00Z',
     riskScore: 65,
     tags: ['location', 'proxy', 'investigation']
   }
@@ -75,10 +76,46 @@ const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1']
 export function Cases() {
   const [activeTab, setActiveTab] = useState<'all' | 'open' | 'in_progress' | 'resolved'>('all')
   const [selectedCase, setSelectedCase] = useState<Case | null>(null)
+  const [cases] = useState<Case[]>(mockCases)
 
   const filteredCases = activeTab === 'all'
     ? mockCases
     : mockCases.filter(case_ => case_.status === activeTab)
+
+  const tableColumns = [
+    {
+      accessor: 'title',
+      label: 'Title'
+    },
+    {
+      accessor: 'type',
+      label: 'Type'
+    },
+    {
+      accessor: 'status',
+      label: 'Status'
+    },
+    {
+      accessor: 'priority',
+      label: 'Priority'
+    },
+    {
+      accessor: 'assignedTo',
+      label: 'Assigned To'
+    },
+    {
+      accessor: 'createdAt',
+      label: 'Created At'
+    },
+    {
+      accessor: 'updatedAt',
+      label: 'Updated At'
+    },
+    {
+      accessor: 'riskScore',
+      label: 'Risk Score'
+    }
+  ]
 
   return (
     <div className="space-y-6">
@@ -175,6 +212,10 @@ export function Cases() {
             </div>
           ))}
         </div>
+      </Card>
+
+      <Card>
+        <Table columns={tableColumns} data={cases} />
       </Card>
     </div>
   )

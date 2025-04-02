@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
 
@@ -42,6 +43,8 @@ const mockBlogPosts: BlogPost[] = [
 ]
 
 export function Blog() {
+  const [posts] = useState<BlogPost[]>(mockBlogPosts)
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Blog</h1>

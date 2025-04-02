@@ -3,6 +3,7 @@ import { Card } from '../components/Card'
 import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
 import { Modal } from '../components/Modal'
+import { Table } from '../components/Table'
 
 interface User {
   id: string
@@ -12,6 +13,14 @@ interface User {
   status: 'active' | 'inactive' | 'pending'
   lastLogin: string
   permissions: string[]
+}
+
+interface ActivityLog {
+  id: string
+  user: string
+  action: string
+  timestamp: string
+  details: string
 }
 
 const mockUsers: User[] = [
@@ -53,7 +62,7 @@ const mockUsers: User[] = [
   }
 ]
 
-const mockActivityLog = [
+const mockActivityLog: ActivityLog[] = [
   {
     id: 'LOG-001',
     user: 'John Smith',
@@ -84,8 +93,10 @@ export function Users() {
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'analyst' | 'viewer'>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'pending'>('all')
+  const [users] = useState<User[]>(mockUsers)
+  const [activityLog] = useState<ActivityLog[]>(mockActivityLog)
 
-  const filteredUsers = mockUsers.filter(user => {
+  const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
@@ -113,6 +124,87 @@ export function Users() {
     setIsDeleteModalOpen(false)
   }
 
+  const userColumns = [
+    {
+      key: 'name',
+      header: 'Name',
+      accessor: (user: User) => user.name
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      accessor: (user: User) => user.email
+    },
+    {
+      key: 'role',
+      header: 'Role',
+      accessor: (user: User) => (
+        <Badge variant={user.role === 'admin' ? 'danger' : user.role === 'analyst' ? 'warning' : 'secondary'}>
+          {user.role}
+        </Badge>
+      )
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      accessor: (user: User) => (
+        <Badge variant={user.status === 'active' ? 'success' : user.status === 'inactive' ? 'danger' : 'warning'}>
+          {user.status}
+        </Badge>
+      )
+    },
+    {
+      key: 'lastLogin',
+      header: 'Last Login',
+      accessor: (user: User) => new Date(user.lastLogin).toLocaleString()
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      accessor: (user: User) => (
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleEdit(user)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDelete(user)}
+          >
+            Delete
+          </Button>
+        </div>
+      )
+    }
+  ]
+
+  const activityColumns = [
+    {
+      key: 'timestamp',
+      header: 'Time',
+      accessor: (log: ActivityLog) => new Date(log.timestamp).toLocaleString()
+    },
+    {
+      key: 'user',
+      header: 'User',
+      accessor: (log: ActivityLog) => log.user
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      accessor: (log: ActivityLog) => log.action
+    },
+    {
+      key: 'details',
+      header: 'Details',
+      accessor: (log: ActivityLog) => log.details
+    }
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -123,19 +215,19 @@ export function Users() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <h3 className="text-sm font-medium text-text-secondary mb-2">Total Users</h3>
-          <p className="text-2xl font-bold">{mockUsers.length}</p>
+          <p className="text-2xl font-bold">{users.length}</p>
         </Card>
         <Card>
           <h3 className="text-sm font-medium text-text-secondary mb-2">Active Users</h3>
-          <p className="text-2xl font-bold">{mockUsers.filter(u => u.status === 'active').length}</p>
+          <p className="text-2xl font-bold">{users.filter(u => u.status === 'active').length}</p>
         </Card>
         <Card>
           <h3 className="text-sm font-medium text-text-secondary mb-2">Pending Users</h3>
-          <p className="text-2xl font-bold">{mockUsers.filter(u => u.status === 'pending').length}</p>
+          <p className="text-2xl font-bold">{users.filter(u => u.status === 'pending').length}</p>
         </Card>
         <Card>
           <h3 className="text-sm font-medium text-text-secondary mb-2">Inactive Users</h3>
-          <p className="text-2xl font-bold">{mockUsers.filter(u => u.status === 'inactive').length}</p>
+          <p className="text-2xl font-bold">{users.filter(u => u.status === 'inactive').length}</p>
         </Card>
       </div>
 
@@ -175,56 +267,13 @@ export function Users() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-4">Name</th>
-                <th className="text-left py-3 px-4">Email</th>
-                <th className="text-left py-3 px-4">Role</th>
-                <th className="text-left py-3 px-4">Status</th>
-                <th className="text-left py-3 px-4">Last Login</th>
-                <th className="text-left py-3 px-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map(user => (
-                <tr key={user.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4">{user.name}</td>
-                  <td className="py-3 px-4">{user.email}</td>
-                  <td className="py-3 px-4">
-                    <Badge variant={user.role === 'admin' ? 'danger' : user.role === 'analyst' ? 'warning' : 'secondary'}>
-                      {user.role}
-                    </Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant={user.status === 'active' ? 'success' : user.status === 'inactive' ? 'danger' : 'warning'}>
-                      {user.status}
-                    </Badge>
-                  </td>
-                  <td className="py-3 px-4">{new Date(user.lastLogin).toLocaleString()}</td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(user)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Table columns={userColumns} data={filteredUsers} />
         </div>
+      </Card>
+
+      <Card>
+        <h2 className="text-xl font-semibold mb-4">Activity Log</h2>
+        <Table columns={activityColumns} data={activityLog} />
       </Card>
 
       <Modal

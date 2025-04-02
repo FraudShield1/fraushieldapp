@@ -4,7 +4,17 @@ import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
 import { Table } from '../components/Table'
 import { Modal } from '../components/Modal'
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter } from 'recharts'
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts'
 
 interface TrackingOrder {
   id: string
@@ -166,6 +176,12 @@ export function TrackingAnomalies() {
       ),
     },
   ]
+
+  const handleFilterChange = (newFilters: any) => {
+    // Implement filter logic here
+    console.log('Filters updated:', newFilters)
+    setFilters(newFilters)
+  }
 
   return (
     <div className="space-y-6">
