@@ -36,4 +36,29 @@ export interface ChartData {
   name: string
   value: number
   color?: string
+}
+
+export interface KYCRecord {
+  id: string
+  customerName: string
+  email: string
+  status: 'pending' | 'verified' | 'failed'
+  riskScore: number
+  submissionDate: string
+  documentType: 'ID' | 'Passport' | 'Driver License'
+  country: string
+  documentPreview?: string
+  selfiePreview?: string
+  verificationResults?: {
+    provider: string
+    score: number
+    matches: boolean
+    geoMismatch: boolean
+  }
+  sessionMetadata?: {
+    browser: string
+    fingerprint: string
+    ip: string
+  }
+  internalNotes?: string
 } 

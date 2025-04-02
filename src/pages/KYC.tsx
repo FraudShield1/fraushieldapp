@@ -1,419 +1,507 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card } from '../components/Card'
 import { Badge } from '../components/Badge'
+import { Table } from '../components/Table'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useToast } from '../contexts/ToastContext'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { kycService } from '../services/kyc'
+import { KYCRecord } from '../types'
 
-interface KYCVerification {
-  id: string
-  customerId: string
-  status: 'verified' | 'pending' | 'failed'
-  timestamp: string
-  riskScore: number
-  documentType: string
-  checks: string[]
-}
-
-const mockVerifications: KYCVerification[] = [
-  {
-    id: 'KYC-001',
-    customerId: 'CUST-001',
-    status: 'verified',
-    timestamp: '2024-03-15T10:30:00',
-    riskScore: 85,
-    documentType: 'Passport',
-    checks: ['Document', 'Face Match', 'Address']
-  },
-  {
-    id: 'KYC-002',
-    customerId: 'CUST-002',
-    status: 'pending',
-    timestamp: '2024-03-15T11:15:00',
-    riskScore: 60,
-    documentType: 'Driver License',
-    checks: ['Document']
-  },
-  {
-    id: 'KYC-003',
-    customerId: 'CUST-003',
-    status: 'failed',
-    timestamp: '2024-03-15T12:00:00',
-    riskScore: 30,
-    documentType: 'National ID',
-    checks: ['Document', 'Face Match']
-  }
-]
-
-const mockRiskData = [
-  { date: '2024-03-10', score: 75 },
-  { date: '2024-03-11', score: 82 },
-  { date: '2024-03-12', score: 78 },
-  { date: '2024-03-13', score: 85 },
-  { date: '2024-03-14', score: 88 },
-  { date: '2024-03-15', score: 85 }
-]
+const COLORS = ['#00C49F', '#FFBB28', '#FF8042', '#FF4444', '#FF0000']
 
 export function KYC() {
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false)
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false)
+  const [selectedRecord, setSelectedRecord] = useState<KYCRecord | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState({
+    status: '',
+    riskRange: '',
+    country: '',
+    dateRange: ''
+  })
   const { showToast } = useToast()
+  const queryClient = useQueryClient()
+  const newKYCFormRef = useRef<HTMLFormElement>(null)
 
-  const handleRequestDemo = () => {
-    setIsDemoModalOpen(true)
+  // Queries
+  const { data: kycRecords = [], isLoading: isLoadingRecords } = useQuery({
+    queryKey: ['kycRecords', filters, searchTerm],
+    queryFn: () => kycService.getKYCRecords({ ...filters, searchTerm })
+  })
+
+  const { data: stats, isLoading: isLoadingStats } = useQuery({
+    queryKey: ['kycStats'],
+    queryFn: kycService.getKYCStats
+  })
+
+  const { data: riskDistribution, isLoading: isLoadingRisk } = useQuery({
+    queryKey: ['riskDistribution'],
+    queryFn: kycService.getRiskDistribution
+  })
+
+  const { data: geoMismatches, isLoading: isLoadingGeo } = useQuery({
+    queryKey: ['geoMismatches'],
+    queryFn: kycService.getGeoMismatches
+  })
+
+  // Mutations
+  const submitMutation = useMutation({
+    mutationFn: kycService.submitKYC,
+    onSuccess: () => {
+      showToast('KYC check submitted successfully', 'success')
+      setIsNewModalOpen(false)
+      queryClient.invalidateQueries({ queryKey: ['kycRecords'] })
+      queryClient.invalidateQueries({ queryKey: ['kycStats'] })
+    }
+  })
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status, notes }: { id: string; status: 'verified' | 'failed'; notes?: string }) =>
+      kycService.updateKYCStatus(id, status, notes),
+    onSuccess: () => {
+      showToast('KYC status updated successfully', 'success')
+      setIsViewModalOpen(false)
+      queryClient.invalidateQueries({ queryKey: ['kycRecords'] })
+      queryClient.invalidateQueries({ queryKey: ['kycStats'] })
+    }
+  })
+
+  const handleView = (record: KYCRecord) => {
+    setSelectedRecord(record)
+    setIsViewModalOpen(true)
   }
 
-  const handleGenerateApiKey = () => {
-    setIsApiKeyModalOpen(true)
-    showToast('API key generated successfully', 'success')
+  const handleRecheck = (record: KYCRecord) => {
+    showToast('KYC recheck initiated', 'success')
   }
 
-  const scrollToIntegration = () => {
-    document.getElementById('integration-section')?.scrollIntoView({ behavior: 'smooth' })
+  const handleFlag = (record: KYCRecord) => {
+    showToast('Record flagged for review', 'warning')
   }
+
+  const handleSubmitKYC = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    submitMutation.mutate({
+      customerName: formData.get('customerName') as string,
+      email: formData.get('email') as string,
+      customerId: formData.get('customerId') as string,
+      documentType: formData.get('documentType') as string,
+      documentFile: formData.get('documentFile') as File,
+      selfieFile: formData.get('selfieFile') as File
+    })
+  }
+
+  const handleUpdateStatus = (status: 'verified' | 'failed') => {
+    if (selectedRecord) {
+      updateStatusMutation.mutate({
+        id: selectedRecord.id,
+        status,
+        notes: selectedRecord.internalNotes
+      })
+    }
+  }
+
+  const tableColumns = [
+    { key: 'customerName', header: 'Customer Name' },
+    { key: 'email', header: 'Email' },
+    { 
+      key: 'status', 
+      header: 'KYC Status',
+      render: (record: KYCRecord) => (
+        <Badge
+          variant={
+            record.status === 'verified'
+              ? 'success'
+              : record.status === 'failed'
+              ? 'danger'
+              : 'warning'
+          }
+        >
+          {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+        </Badge>
+      )
+    },
+    { 
+      key: 'riskScore', 
+      header: 'Risk Score',
+      render: (record: KYCRecord) => (
+        <Badge
+          variant={
+            record.riskScore > 80
+              ? 'danger'
+              : record.riskScore > 60
+              ? 'warning'
+              : 'success'
+          }
+        >
+          {record.riskScore}
+        </Badge>
+      )
+    },
+    { key: 'submissionDate', header: 'Submission Date' },
+    { key: 'documentType', header: 'Document Type' },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (record: KYCRecord) => (
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={() => handleView(record)}>
+            View
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => handleRecheck(record)}>
+            Recheck
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => handleFlag(record)}>
+            Flag
+          </Button>
+        </div>
+      )
+    }
+  ]
 
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-8 rounded-lg">
-        <h1 className="text-4xl font-bold text-text mb-4">Verify Customers. Minimize Risk.</h1>
-        <p className="text-xl text-text-secondary mb-6">
-          Integrated KYC checks to validate user identities before fraud happens.
-        </p>
-        <Button onClick={scrollToIntegration} variant="primary" size="lg">
-          Start KYC Integration
-        </Button>
-      </div>
-
-      {/* Overview Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <h3 className="text-xl font-semibold mb-2">Reduce Chargebacks</h3>
-          <p className="text-text-secondary">
-            Stop fraud before orders are placed with comprehensive identity verification.
-          </p>
-        </Card>
-        <Card>
-          <h3 className="text-xl font-semibold mb-2">Stay Compliant</h3>
-          <p className="text-text-secondary">
-            Meet GDPR, AML, and industry KYC requirements with automated verification.
-          </p>
-        </Card>
-        <Card>
-          <h3 className="text-xl font-semibold mb-2">Trust Your Customers</h3>
-          <p className="text-text-secondary">
-            Strengthen onboarding and prevent abuse with verified identities.
-          </p>
-        </Card>
-      </div>
-
-      {/* Feature Highlights */}
-      <div>
-        <h2 className="text-2xl font-bold mb-6">Feature Highlights</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Identity Document Verification</h3>
-                <p className="text-sm text-text-secondary">
-                  Automatically verify passports, national IDs, driver's licenses
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card>
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Liveness & Face Match</h3>
-                <p className="text-sm text-text-secondary">
-                  Check if the user is real with live selfies matched to ID photo
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card>
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Address & Geolocation Check</h3>
-                <p className="text-sm text-text-secondary">
-                  Validate user-submitted address against IP geolocation
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card>
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Bank / Payment Method Verification</h3>
-                <p className="text-sm text-text-secondary">
-                  Detect stolen credit cards or disposable emails
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card>
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Risk Scoring</h3>
-                <p className="text-sm text-text-secondary">
-                  Return a fraud score based on identity mismatches and watchlist hits
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card>
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Audit Trail</h3>
-                <p className="text-sm text-text-secondary">
-                  Record every check securely and make it GDPR / compliance friendly
-                </p>
-              </div>
-            </div>
-          </Card>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-text">KYC Verification Panel</h1>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => setIsSettingsModalOpen(true)}>
+            Settings
+          </Button>
+          <Button onClick={() => setIsNewModalOpen(true)}>
+            New KYC Check
+          </Button>
         </div>
       </div>
 
-      {/* Integration Methods */}
-      <div id="integration-section">
-        <h2 className="text-2xl font-bold mb-6">Integration Methods</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <h3 className="text-xl font-semibold mb-4">API Integration</h3>
-            <pre className="bg-secondary/10 p-4 rounded-lg overflow-x-auto">
-              <code>{`// Example API Request
-POST /api/v1/kyc/verify
-{
-  "customerId": "CUST-001",
-  "documentType": "passport",
-  "documentData": {
-    "number": "P123456789",
-    "expiryDate": "2025-12-31"
-  }
-}`}</code>
-            </pre>
-            <Button onClick={handleGenerateApiKey} className="mt-4">
-              Generate API Key
-            </Button>
-          </Card>
-          <Card>
-            <h3 className="text-xl font-semibold mb-4">JS Widget</h3>
-            <pre className="bg-secondary/10 p-4 rounded-lg overflow-x-auto">
-              <code>{`<!-- KYC Widget -->
-<script src="https://fraudshield.com/kyc-widget.js"></script>
-<div id="kyc-verification"></div>`}</code>
-            </pre>
-            <Button variant="secondary" className="mt-4">
-              Copy Code
-            </Button>
-          </Card>
-        </div>
-      </div>
-
-      {/* Use Cases */}
-      <div>
-        <h2 className="text-2xl font-bold mb-6">Use Cases</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <h3 className="text-xl font-semibold mb-2">Retail</h3>
-            <p className="text-text-secondary">
-              Flag suspicious high-ticket orders with comprehensive identity verification.
-            </p>
-          </Card>
-          <Card>
-            <h3 className="text-xl font-semibold mb-2">Marketplaces</h3>
-            <p className="text-text-secondary">
-              Require seller ID verification before payouts to prevent fraud.
-            </p>
-          </Card>
-          <Card>
-            <h3 className="text-xl font-semibold mb-2">Subscription Services</h3>
-            <p className="text-text-secondary">
-              Check real identity to stop trial abuse and ensure legitimate subscriptions.
-            </p>
-          </Card>
-        </div>
-      </div>
-
-      {/* Dashboard Integration */}
-      <div>
-        <h2 className="text-2xl font-bold mb-6">Dashboard Integration</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Real-time KYC Monitoring</h3>
-              <p className="text-text-secondary mb-4">
-                All KYC checks and fraud scores will be displayed in your FraudShield Dashboard alongside your real-time orders.
-              </p>
-              <div className="h-64">
+          <h3 className="text-sm font-medium text-text-secondary mb-4">Total KYC Checks (This Month)</h3>
+          <p className="text-3xl font-bold">{isLoadingStats ? '...' : stats?.totalChecks}</p>
+        </Card>
+        <Card>
+          <h3 className="text-sm font-medium text-text-secondary mb-4">Verification Rate</h3>
+          <p className="text-3xl font-bold">{isLoadingStats ? '...' : `${stats?.verificationRate}%`}</p>
+        </Card>
+        <Card>
+          <h3 className="text-sm font-medium text-text-secondary mb-4">Average Risk Score</h3>
+          <p className="text-3xl font-bold">{isLoadingStats ? '...' : stats?.averageRiskScore}</p>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-text">KYC Records</h2>
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Search by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <select 
+                  className="input"
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="verified">Verified</option>
+                  <option value="pending">Pending</option>
+                  <option value="failed">Failed</option>
+                </select>
+                <select 
+                  className="input"
+                  value={filters.riskRange}
+                  onChange={(e) => setFilters({ ...filters, riskRange: e.target.value })}
+                >
+                  <option value="">All Risk Levels</option>
+                  <option value="low">Low (0-40)</option>
+                  <option value="medium">Medium (41-60)</option>
+                  <option value="high">High (61-100)</option>
+                </select>
+                <Button variant="secondary">Export CSV</Button>
+              </div>
+            </div>
+            <Table 
+              columns={tableColumns} 
+              data={kycRecords} 
+              isLoading={isLoadingRecords}
+            />
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <h3 className="text-sm font-medium text-text-secondary mb-4">Risk Score Distribution</h3>
+            <div className="h-[300px]">
+              {isLoadingRisk ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-text-secondary">Loading...</p>
+                </div>
+              ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mockRiskData}>
+                  <BarChart data={riskDistribution}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis dataKey="score" />
                     <YAxis />
                     <Tooltip />
-                    <Line type="monotone" dataKey="score" stroke="#00f2ff" />
-                  </LineChart>
+                    <Bar dataKey="count" fill="#8884d8" />
+                  </BarChart>
                 </ResponsiveContainer>
+              )}
+            </div>
+          </Card>
+
+          <Card>
+            <h3 className="text-sm font-medium text-text-secondary mb-4">Geo Mismatches by Country</h3>
+            <div className="h-[300px]">
+              {isLoadingGeo ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-text-secondary">Loading...</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={geoMismatches}
+                      dataKey="count"
+                      nameKey="country"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label
+                    >
+                      {geoMismatches?.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* View KYC Record Modal */}
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false)
+          setSelectedRecord(null)
+        }}
+        title="KYC Record Details"
+        actions={[
+          {
+            label: 'Close',
+            onClick: () => {
+              setIsViewModalOpen(false)
+              setSelectedRecord(null)
+            }
+          },
+          {
+            label: 'Approve',
+            onClick: () => handleUpdateStatus('verified'),
+            variant: 'primary'
+          },
+          {
+            label: 'Reject',
+            onClick: () => handleUpdateStatus('failed'),
+            variant: 'danger'
+          }
+        ]}
+      >
+        {selectedRecord && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-medium mb-2">Customer Information</h4>
+                <div className="space-y-2">
+                  <p><span className="text-text-secondary">Name:</span> {selectedRecord.customerName}</p>
+                  <p><span className="text-text-secondary">Email:</span> {selectedRecord.email}</p>
+                  <p><span className="text-text-secondary">Country:</span> {selectedRecord.country}</p>
+                  <p><span className="text-text-secondary">Document Type:</span> {selectedRecord.documentType}</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Verification Details</h4>
+                <div className="space-y-2">
+                  <p><span className="text-text-secondary">Status:</span> {selectedRecord.status}</p>
+                  <p><span className="text-text-secondary">Risk Score:</span> {selectedRecord.riskScore}</p>
+                  <p><span className="text-text-secondary">Submission Date:</span> {selectedRecord.submissionDate}</p>
+                </div>
               </div>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Recent Verifications</h3>
-              <div className="space-y-4">
-                {mockVerifications.map((verification) => (
-                  <div key={verification.id} className="p-4 bg-secondary/5 rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-medium">Customer {verification.customerId}</h4>
-                        <p className="text-sm text-text-secondary">
-                          {verification.documentType} • {verification.timestamp}
-                        </p>
-                      </div>
-                      <Badge
-                        variant={
-                          verification.status === 'verified'
-                            ? 'success'
-                            : verification.status === 'pending'
-                            ? 'warning'
-                            : 'danger'
-                        }
-                      >
-                        {verification.status}
-                      </Badge>
-                    </div>
-                    <div className="mt-2">
-                      <div className="flex gap-1 flex-wrap">
-                        {verification.checks.map((check) => (
-                          <Badge key={check} variant="secondary">
-                            {check}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+
+            {selectedRecord.verificationResults && (
+              <div>
+                <h4 className="font-medium mb-2">Verification Results</h4>
+                <div className="space-y-2">
+                  <p><span className="text-text-secondary">Provider:</span> {selectedRecord.verificationResults.provider}</p>
+                  <p><span className="text-text-secondary">Score:</span> {selectedRecord.verificationResults.score}</p>
+                  <p><span className="text-text-secondary">Document Match:</span> {selectedRecord.verificationResults.matches ? 'Yes' : 'No'}</p>
+                  <p><span className="text-text-secondary">Geo Mismatch:</span> {selectedRecord.verificationResults.geoMismatch ? 'Yes' : 'No'}</p>
+                </div>
               </div>
+            )}
+
+            {selectedRecord.sessionMetadata && (
+              <div>
+                <h4 className="font-medium mb-2">Session Metadata</h4>
+                <div className="space-y-2">
+                  <p><span className="text-text-secondary">Browser:</span> {selectedRecord.sessionMetadata.browser}</p>
+                  <p><span className="text-text-secondary">IP Address:</span> {selectedRecord.sessionMetadata.ip}</p>
+                  <p><span className="text-text-secondary">Fingerprint:</span> {selectedRecord.sessionMetadata.fingerprint}</p>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h4 className="font-medium mb-2">Internal Notes</h4>
+              <textarea
+                className="input w-full h-32"
+                value={selectedRecord.internalNotes || ''}
+                onChange={(e) => {
+                  if (selectedRecord) {
+                    setSelectedRecord({
+                      ...selectedRecord,
+                      internalNotes: e.target.value
+                    })
+                  }
+                }}
+              />
             </div>
           </div>
-        </Card>
-      </div>
+        )}
+      </Modal>
 
-      {/* Call to Action */}
-      <div className="flex justify-center gap-4">
-        <Button onClick={handleRequestDemo} variant="primary" size="lg">
-          Request KYC Setup
-        </Button>
-        <Button variant="secondary" size="lg">
-          Schedule Integration
-        </Button>
-      </div>
-
-      {/* Demo Request Modal */}
+      {/* New KYC Check Modal */}
       <Modal
-        isOpen={isDemoModalOpen}
-        onClose={() => setIsDemoModalOpen(false)}
-        title="Request KYC Demo"
+        isOpen={isNewModalOpen}
+        onClose={() => setIsNewModalOpen(false)}
+        title="New KYC Check"
         actions={[
           {
             label: 'Cancel',
-            onClick: () => setIsDemoModalOpen(false)
+            onClick: () => setIsNewModalOpen(false)
           },
           {
-            label: 'Submit Request',
-            onClick: () => {
-              showToast('Demo request submitted successfully', 'success')
-              setIsDemoModalOpen(false)
-            },
+            label: 'Submit',
+            onClick: () => newKYCFormRef.current?.submit(),
+            variant: 'primary',
+            disabled: submitMutation.isPending
+          }
+        ]}
+      >
+        <form ref={newKYCFormRef} onSubmit={handleSubmitKYC} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Customer Name</label>
+            <input type="text" name="customerName" className="input w-full" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input type="email" name="email" className="input w-full" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Customer ID</label>
+            <input type="text" name="customerId" className="input w-full" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Document Type</label>
+            <select name="documentType" className="input w-full" required>
+              <option value="Passport">Passport</option>
+              <option value="ID">ID Card</option>
+              <option value="Driver License">Driver License</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Upload Document</label>
+            <input type="file" name="documentFile" className="input w-full" accept="image/*" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Upload Selfie</label>
+            <input type="file" name="selfieFile" className="input w-full" accept="image/*" required />
+          </div>
+        </form>
+      </Modal>
+
+      {/* Settings Modal */}
+      <Modal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        title="KYC Settings"
+        actions={[
+          {
+            label: 'Close',
+            onClick: () => setIsSettingsModalOpen(false)
+          },
+          {
+            label: 'Save Changes',
+            onClick: () => showToast('Settings saved successfully', 'success'),
             variant: 'primary'
           }
         ]}
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Company Name</label>
-            <input type="text" className="input w-full" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input type="email" className="input w-full" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Use Case</label>
-            <select className="input w-full">
-              <option>Retail</option>
-              <option>Marketplace</option>
-              <option>Subscription Service</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Message</label>
-            <textarea className="input w-full h-32" />
-          </div>
-        </div>
-      </Modal>
-
-      {/* API Key Modal */}
-      <Modal
-        isOpen={isApiKeyModalOpen}
-        onClose={() => setIsApiKeyModalOpen(false)}
-        title="API Key Generated"
-        actions={[
-          {
-            label: 'Close',
-            onClick: () => setIsApiKeyModalOpen(false)
-          }
-        ]}
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Your API Key</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                className="input flex-1 font-mono"
-                value="sk_live_1234567890abcdef"
-                readOnly
-              />
-              <Button variant="secondary">Copy</Button>
+            <h4 className="font-medium mb-2">API Credentials</h4>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">Sumsub API Key</label>
+                <input type="password" className="input w-full" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Veriff API Key</label>
+                <input type="password" className="input w-full" />
+              </div>
             </div>
           </div>
-          <div className="bg-secondary/10 p-4 rounded-lg">
-            <p className="text-sm">
-              Keep this API key secure and never share it publicly. You can regenerate it at any time.
-            </p>
+
+          <div>
+            <h4 className="font-medium mb-2">Risk Thresholds</h4>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">High Risk Threshold</label>
+                <input type="number" className="input w-full" defaultValue={80} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Medium Risk Threshold</label>
+                <input type="number" className="input w-full" defaultValue={60} />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-2">Automation Settings</h4>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="checkbox" />
+                <span className="text-sm">Auto-reject if document mismatch</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-2">Webhook Configuration</h4>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">Webhook URL</label>
+                <input type="url" className="input w-full" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Secret Key</label>
+                <input type="password" className="input w-full" />
+              </div>
+            </div>
           </div>
         </div>
       </Modal>

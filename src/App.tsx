@@ -14,6 +14,7 @@ import { Analytics } from './pages/Analytics'
 import { Users } from './pages/Users'
 import { Settings } from './pages/Settings'
 import { TCPFingerprint } from './pages/TCPFingerprint'
+import { Integrations } from './pages/Integrations'
 import { Blog } from './pages/Blog'
 import { KYC } from './pages/KYC'
 
@@ -38,6 +39,7 @@ function App() {
               <Route path="/insiders" element={<Insiders />} />
               <Route path="/users" element={<Users />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/integrations" element={<Integrations />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/kyc" element={<KYC />} />
             </Routes>
