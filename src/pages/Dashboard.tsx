@@ -98,28 +98,12 @@ const tableColumns = [
   { key: 'resolutionSummary', header: 'Resolution Summary' }
 ]
 
-const mockDailyData = [
-  { date: "2024-03-10", amount: 1200 },
-  { date: "2024-03-11", amount: 1500 },
-  { date: "2024-03-12", amount: 800 },
-  { date: "2024-03-13", amount: 2000 },
-  { date: "2024-03-14", amount: 1800 },
-  { date: "2024-03-15", amount: 2500 },
-];
-
-const mockFraudReasons = [
-  { name: "Identity Theft", value: 35 },
-  { name: "Payment Fraud", value: 25 },
-  { name: "Account Takeover", value: 20 },
-  { name: "Friendly Fraud", value: 15 },
-  { name: "Other", value: 5 },
-];
-
 export function Dashboard() {
   const [orders] = useState<Order[]>(mockOrders)
   const [stats] = useState(mockStats)
   const [dailyData] = useState(mockDailyFlaggedOrders)
   const [fraudReasons] = useState(mockFraudReasons)
+  const [riskDistribution] = useState(mockRiskDistribution)
 
   return (
     <div className="space-y-6">

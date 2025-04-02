@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
@@ -112,8 +112,8 @@ const tableColumns = [
 
 export function TCPFingerprint() {
   const [orders] = useState<Order[]>(mockOrders)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [ipInfo, setIpInfo] = useState<IPInfo | null>(null)
+  const [isScanning, setIsScanning] = useState(false)
   const [scanResult, setScanResult] = useState<FingerprintResult | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -122,6 +122,7 @@ export function TCPFingerprint() {
   const [scoreRange, setScoreRange] = useState('')
 
   handleScanIP = async (ip: string) => {
+    setIsScanning(true)
     setError(null)
     
     try {
@@ -157,6 +158,8 @@ export function TCPFingerprint() {
     } catch (err) {
       setError('Scan failed. Please try again.')
       console.error('Scan error:', err)
+    } finally {
+      setIsScanning(false)
     }
   }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
+import { Badge } from '../components/Badge'
 import { IntegrationCard } from '../components/IntegrationCard'
 
 // Integration categories and their integrations
@@ -214,8 +215,8 @@ export function Settings() {
     console.log('Testing connection to:', integration)
   }
 
-  const handleWebhookToggle = (integrationId: string) => {
-    // ... implementation ...
+  const handleWebhookToggle = (integration: string) => {
+    console.log('Toggling webhook for:', integration)
   }
 
   return (

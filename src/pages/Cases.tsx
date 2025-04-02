@@ -5,50 +5,53 @@ import { Badge } from '../components/Badge'
 import {
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts'
 
 interface Case {
   id: string
   title: string
-  status: 'open' | 'in_progress' | 'resolved' | 'closed'
-  priority: 'high' | 'medium' | 'low'
+  type: string
+  status: 'open' | 'in_progress' | 'resolved'
+  priority: 'low' | 'medium' | 'high'
   assignedTo: string
   createdAt: string
+  lastUpdated: string
+  riskScore: number
+  tags: string[]
 }
 
 const mockCases: Case[] = [
   {
-    id: '1',
-    title: 'Suspicious Transaction Pattern',
-    status: 'open',
-    priority: 'high',
-    assignedTo: 'John Doe',
-    createdAt: '2024-03-15',
-  },
-  {
     id: 'CASE-001',
     title: 'Suspicious Multiple Returns',
+    type: 'Refund Fraud',
     status: 'open',
     priority: 'high',
     assignedTo: 'John Smith',
     createdAt: '2024-03-15T10:00:00Z',
+    lastUpdated: '2024-03-15T14:30:00Z',
+    riskScore: 85,
+    tags: ['refund', 'high-risk', 'urgent']
   },
   {
     id: 'CASE-002',
     title: 'IP Geolocation Mismatch',
+    type: 'Location Fraud',
     status: 'in_progress',
     priority: 'medium',
     assignedTo: 'Sarah Johnson',
     createdAt: '2024-03-14T15:20:00Z',
+    lastUpdated: '2024-03-15T09:15:00Z',
+    riskScore: 65,
+    tags: ['location', 'proxy', 'investigation']
   }
 ]
 
@@ -70,46 +73,109 @@ const mockCaseTypes = [
 const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1']
 
 export function Cases() {
+  const [activeTab, setActiveTab] = useState<'all' | 'open' | 'in_progress' | 'resolved'>('all')
   const [selectedCase, setSelectedCase] = useState<Case | null>(null)
+
+  const filteredCases = activeTab === 'all'
+    ? mockCases
+    : mockCases.filter(case_ => case_.status === activeTab)
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Fraud Cases</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Fraud Cases</h1>
+        <Button>Create New Case</Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <h2 className="text-lg font-semibold mb-4">Case Overview</h2>
-          <div className="space-y-4">
-            {mockCases.map((case_) => (
-              <div
-                key={case_.id}
-                className="border-b pb-4 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                onClick={() => setSelectedCase(case_)}
-              >
-                <div className="flex justify-between items-start">
-                  <h3 className="font-medium">{case_.title}</h3>
-                  <Badge
-                    variant={
-                      case_.priority === 'high'
-                        ? 'error'
-                        : case_.priority === 'medium'
-                        ? 'warning'
-                        : 'success'
-                    }
-                  >
-                    {case_.priority}
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Assigned to: {case_.assignedTo}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Created: {case_.createdAt}
-                </p>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-sm font-medium text-text-secondary mb-2">Total Cases</h3>
+          <p className="text-2xl font-bold">{mockCases.length}</p>
+        </Card>
+        <Card>
+          <h3 className="text-sm font-medium text-text-secondary mb-2">Open Cases</h3>
+          <p className="text-2xl font-bold">{mockCases.filter(c => c.status === 'open').length}</p>
+        </Card>
+        <Card>
+          <h3 className="text-sm font-medium text-text-secondary mb-2">High Priority</h3>
+          <p className="text-2xl font-bold">{mockCases.filter(c => c.priority === 'high').length}</p>
         </Card>
       </div>
+
+      <Card>
+        <div className="flex space-x-4 mb-6">
+          <Button
+            variant={activeTab === 'all' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => setActiveTab('all')}
+          >
+            All
+          </Button>
+          <Button
+            variant={activeTab === 'open' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => setActiveTab('open')}
+          >
+            Open
+          </Button>
+          <Button
+            variant={activeTab === 'in_progress' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => setActiveTab('in_progress')}
+          >
+            In Progress
+          </Button>
+          <Button
+            variant={activeTab === 'resolved' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => setActiveTab('resolved')}
+          >
+            Resolved
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          {filteredCases.map(case_ => (
+            <div
+              key={case_.id}
+              className="flex items-center justify-between p-4 bg-secondary/5 rounded-lg hover:bg-secondary/10 cursor-pointer"
+              onClick={() => setSelectedCase(case_)}
+            >
+              <div>
+                <h3 className="font-medium">{case_.title}</h3>
+                <p className="text-sm text-text-secondary">{case_.type}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Badge
+                  variant={
+                    case_.priority === 'high'
+                      ? 'danger'
+                      : case_.priority === 'medium'
+                      ? 'warning'
+                      : 'secondary'
+                  }
+                >
+                  {case_.priority}
+                </Badge>
+                <Badge
+                  variant={
+                    case_.status === 'open'
+                      ? 'success'
+                      : case_.status === 'in_progress'
+                      ? 'warning'
+                      : 'secondary'
+                  }
+                >
+                  {case_.status.replace('_', ' ')}
+                </Badge>
+                <div className="text-sm text-text-secondary">
+                  Risk: {case_.riskScore}%
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   )
 } 

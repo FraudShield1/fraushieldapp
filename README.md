@@ -1,75 +1,46 @@
 # FraudShield Dashboard
 
-A comprehensive fraud detection and prevention dashboard built with React, TypeScript, and Tailwind CSS.
+A modern, secure, and responsive Fraud Monitoring Dashboard for the FraudShield fraud prevention SaaS platform.
 
 ## Features
 
-- Real-time fraud monitoring and analytics
-- Pattern detection and analysis
-- Standard Operating Procedures (SOPs) management
-- Case management system
-- Chargeback tracking
-- Warranty claims management
-- Tracking anomaly detection
-- TCP fingerprint analysis
-- Insider threat detection
-- User management
-- System settings and configuration
+- Real-time fraud monitoring and detection
+- Interactive data visualization
+- Order management and investigation tools
+- Risk assessment and scoring
+- Integration capabilities with major e-commerce platforms
 
 ## Tech Stack
 
-- React 18
-- TypeScript
-- Tailwind CSS
-- Vite
-- React Router
-- Recharts
-- React Query
+- React + TypeScript
+- Tailwind CSS for styling
+- Headless UI for accessible components
+- Hero Icons for beautiful icons
+- Recharts for data visualization
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm (v7 or higher)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/fraudshield.git
-cd fraudshield
-```
-
+1. Clone the repository
 2. Install dependencies:
-```bash
-npm install
-```
-
+   ```bash
+   npm install
+   ```
 3. Start the development server:
-```bash
-npm run dev
-```
-
-4. Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### Building for Production
-
-```bash
-npm run build
-```
-
-The build artifacts will be stored in the `dist/` directory.
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ## Project Structure
 
 ```
 src/
-├── components/     # Reusable UI components
-├── contexts/      # React contexts
-├── pages/         # Page components
-├── types/         # TypeScript type definitions
-└── utils/         # Utility functions and mock data
+  ├── components/     # Reusable UI components
+  ├── pages/         # Page components
+  ├── hooks/         # Custom React hooks
+  ├── types/         # TypeScript type definitions
+  ├── utils/         # Utility functions
+  └── App.tsx        # Main application component
 ```
 
 ## Contributing
@@ -82,4 +53,4 @@ src/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.

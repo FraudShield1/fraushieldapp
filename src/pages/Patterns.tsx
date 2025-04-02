@@ -23,7 +23,13 @@ interface Pattern {
   definition: string
   modifiedBy: string
   effectiveness: number
-  riskLevel: 'high' | 'medium' | 'low'
+}
+
+interface SimulationResult {
+  orderId: string
+  fraudScore: number
+  matchedPatterns: string[]
+  recommendedSOPs: string[]
 }
 
 const mockPatterns: Pattern[] = [
@@ -42,8 +48,7 @@ const mockPatterns: Pattern[] = [
     status: 'active',
     definition: 'IF IP = Proxy + shipping ≠ billing + delivery < 3d THEN HIGH',
     modifiedBy: 'John Doe',
-    effectiveness: 85,
-    riskLevel: 'high'
+    effectiveness: 85
   },
   {
     id: 'PAT-002',
@@ -60,8 +65,7 @@ const mockPatterns: Pattern[] = [
     status: 'active',
     definition: 'IF refunds > 3 in 30d + different cards used THEN HIGH',
     modifiedBy: 'Jane Smith',
-    effectiveness: 90,
-    riskLevel: 'high'
+    effectiveness: 90
   }
 ]
 
@@ -80,9 +84,9 @@ const mockCategories = [
 const COLORS = ['#00f2ff', '#0088FE', '#00C49F']
 
 export function Patterns() {
-  const [patterns] = useState(mockPatterns)
-  const [activeTab, setActiveTab] = useState('all')
+  const [activeTab, setActiveTab] = useState<'library' | 'builder' | 'simulation' | 'versions'>('library')
   const [selectedPattern, setSelectedPattern] = useState<Pattern | null>(null)
+  const [simulationResults, setSimulationResults] = useState<SimulationResult[]>([])
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isSimulationModalOpen, setIsSimulationModalOpen] = useState(false)
   const [editedPattern, setEditedPattern] = useState<Pattern | null>(null)
@@ -233,7 +237,7 @@ export function Patterns() {
                 </select>
               </div>
             </div>
-            <Table columns={tableColumns} data={patterns} />
+            <Table columns={tableColumns} data={mockPatterns} />
           </Card>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -371,7 +375,7 @@ export function Patterns() {
                 <div className="flex-1">
                   <label className="block text-sm font-medium mb-1">Select Patterns</label>
                   <select className="input w-full" multiple>
-                    {patterns.map(pattern => (
+                    {mockPatterns.map(pattern => (
                       <option key={pattern.id} value={pattern.id}>
                         {pattern.name}
                       </option>
@@ -382,6 +386,45 @@ export function Patterns() {
               <Button>Run Simulation</Button>
             </div>
           </Card>
+
+          {simulationResults.length > 0 && (
+            <Card>
+              <h2 className="text-xl font-semibold mb-4">Simulation Results</h2>
+              <Table
+                columns={[
+                  { key: 'orderId', header: 'Order ID' },
+                  { 
+                    key: 'fraudScore', 
+                    header: 'Fraud Score',
+                    render: (result: SimulationResult) => (
+                      <Badge
+                        variant={
+                          result.fraudScore > 80
+                            ? 'danger'
+                            : result.fraudScore > 60
+                            ? 'warning'
+                            : 'success'
+                        }
+                      >
+                        {result.fraudScore}
+                      </Badge>
+                    )
+                  },
+                  { 
+                    key: 'matchedPatterns', 
+                    header: 'Matched Patterns',
+                    render: (result: SimulationResult) => result.matchedPatterns.join(', ')
+                  },
+                  {
+                    key: 'recommendedSOPs',
+                    header: 'Recommended SOPs',
+                    render: (result: SimulationResult) => result.recommendedSOPs.join(', ')
+                  }
+                ]}
+                data={simulationResults}
+              />
+            </Card>
+          )}
         </div>
       )}
 
