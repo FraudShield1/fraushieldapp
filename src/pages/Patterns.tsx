@@ -276,8 +276,12 @@ export function Patterns() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {mockCategories.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      {mockCategories.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS[index % COLORS.length]}
+                          name={entry.name}
+                        />
                       ))}
                     </Pie>
                     <Tooltip />
