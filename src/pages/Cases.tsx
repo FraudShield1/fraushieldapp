@@ -75,7 +75,6 @@ const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1']
 
 export function Cases() {
   const [activeTab, setActiveTab] = useState<'all' | 'open' | 'in_progress' | 'resolved'>('all')
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null)
   const [cases] = useState<Case[]>(mockCases)
 
   const filteredCases = activeTab === 'all'
@@ -176,7 +175,6 @@ export function Cases() {
             <div
               key={case_.id}
               className="flex items-center justify-between p-4 bg-secondary/5 rounded-lg hover:bg-secondary/10 cursor-pointer"
-              onClick={() => setSelectedCase(case_)}
             >
               <div>
                 <h3 className="font-medium">{case_.title}</h3>
@@ -248,7 +246,7 @@ export function Cases() {
                   outerRadius={100}
                   label
                 >
-                  {mockCaseTypes.map((entry, index) => (
+                  {mockCaseTypes.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

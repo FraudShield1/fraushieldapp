@@ -556,98 +556,101 @@ export function Patterns() {
       <Modal
         isOpen={isSimulationModalOpen}
         onClose={() => setIsSimulationModalOpen(false)}
-        title="Pattern Simulation Results"
+        title="Pattern Simulation"
+        actions={[
+          {
+            label: 'Close',
+            onClick: () => setIsSimulationModalOpen(false)
+          },
+          {
+            label: 'Run Simulation',
+            onClick: handleRunSimulation,
+            variant: 'primary'
+          }
+        ]}
       >
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <h3 className="text-sm font-medium text-text-secondary mb-4">Trigger Trends</h3>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={mockTriggers}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="triggers" stroke="#8884d8" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-
-            <Card>
-              <h3 className="text-sm font-medium text-text-secondary mb-4">Category Distribution</h3>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={mockCategories}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label
-                    >
-                      {mockCategories.map((category, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </div>
-
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-text-secondary mb-2">Simulation Results</h3>
-            <div className="space-y-2">
-              {simulationResults.map((result) => (
-                <div key={result.orderId} className="p-4 bg-secondary/5 rounded-lg">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">Order {result.orderId}</h4>
-                      <p className="text-sm text-text-secondary">Fraud Score: {result.fraudScore}%</p>
-                    </div>
-                    <Badge
-                      variant={
-                        result.fraudScore > 80
-                          ? 'danger'
-                          : result.fraudScore > 60
-                          ? 'warning'
-                          : 'success'
-                      }
-                    >
-                      {result.fraudScore}%
-                    </Badge>
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-sm font-medium">Matched Patterns:</p>
-                    <div className="flex gap-1 flex-wrap mt-1">
-                      {result.matchedPatterns.map((pattern) => (
-                        <Badge key={pattern} variant="secondary">
-                          {pattern}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-sm font-medium">Recommended SOPs:</p>
-                    <div className="flex gap-1 flex-wrap mt-1">
-                      {result.recommendedSOPs.map((sop) => (
-                        <Badge key={sop} variant="primary">
-                          {sop}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+        {selectedPattern && (
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-2">Simulation Settings</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span>Dataset Size</span>
+                  <select className="input w-32">
+                    <option>1,000 records</option>
+                    <option>5,000 records</option>
+                    <option>10,000 records</option>
+                  </select>
                 </div>
-              ))}
+                <div className="flex justify-between items-center">
+                  <span>Time Range</span>
+                  <select className="input w-32">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 90 days</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Expected Results</h4>
+              <div className="bg-secondary/10 p-4 rounded">
+                <p className="text-sm">
+                  This simulation will analyze the pattern's effectiveness against the selected dataset
+                  and provide detailed metrics including:
+                </p>
+                <ul className="mt-2 text-sm list-disc list-inside">
+                  <li>True Positive Rate</li>
+                  <li>False Positive Rate</li>
+                  <li>Detection Accuracy</li>
+                  <li>Processing Time</li>
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </Modal>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <h3 className="text-sm font-medium text-text-secondary mb-4">Trigger Trends</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={mockTriggers}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="week" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="triggers" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-sm font-medium text-text-secondary mb-4">Category Distribution</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={mockCategories}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label
+                >
+                  {mockCategories.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 } 
