@@ -17,6 +17,7 @@ import { TCPFingerprint } from './pages/TCPFingerprint'
 import { Integrations } from './pages/Integrations'
 import { Blog } from './pages/Blog'
 import { KYC } from './pages/KYC'
+import { Fingerprint } from './pages/Fingerprint'
 
 const queryClient = new QueryClient()
 
@@ -42,6 +43,7 @@ function App() {
               <Route path="/integrations" element={<Integrations />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/kyc" element={<KYC />} />
+              <Route path="/fingerprint" element={<Fingerprint />} />
             </Routes>
           </Layout>
         </Router>
